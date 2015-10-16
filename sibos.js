@@ -1,12 +1,10 @@
-//var billion = 1000000000;
-
 var appropriationTypeColors =
     ["#74C365", // light green 
     "#006600",  // dark green 
     "#007BA7"]; // blue
 
 
-d3.csv("./Sibos_2015_day1.csv", function (data) {
+d3.csv("./Sibos_2015_day1234.csv", function (data) {
     data.forEach(function (d) {
         d.count = 1; // add column "count", set value to "1"
     });
@@ -34,7 +32,7 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
             return d; 
         })
         //.formatNumber(function (d) { return Math.round(d) + " attendees"; });
-        .formatNumber(function (d) { return d + " attendance"; });
+        .formatNumber(function (d) { return d + " scans"; });
 
     // 03 dimension, rowchart, STREAM
     var streamDim = facts.dimension(dc.pluck('STREAM'));
@@ -68,7 +66,7 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 05 dimension, rowchart, BUSINESS_FOCUS  
     var businessFocusDim = facts.dimension(dc.pluck('BUSINESS_FOCUS'));
@@ -111,9 +109,9 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
     dc.rowChart("#dc-chart-sessionname")
         .dimension(sessionNameDim)
         .group(sessionNameGroupSum)
-        .data(function (d) { return d.top(50); })
+        .data(function (d) { return d.top(80); })
         .width(500)
-        .height(650)
+        .height(1010)
         //.height(15 * 22)
         .margins({ top: 0, right: 10, bottom: 20, left: 20 })
         .elasticX(true)
@@ -145,6 +143,40 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
     dc.rowChart("#dc-chart-agerange")
         .dimension(ageRangeDim)
         .group(ageRangeGroupSum)
+        .data(function (d) { return d.top(15); })
+        .width(300)
+        .height(220)
+        //.height(15 * 22)
+        .margins({ top: 0, right: 10, bottom: 20, left: 20 })
+        .elasticX(true)
+        .ordinalColors(['#9ecae1']) // light blue
+        .labelOffsetX(0)
+        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+    
+    // 10 dimension, rowchart, SESSIONDATE  
+    var sessionDateDim = facts.dimension(dc.pluck('SESSIONDATE'));
+    var sessionDateGroupSum = sessionDateDim.group().reduceSum(dc.pluck("count"));
+    
+    dc.rowChart("#dc-chart-sessiondate")
+        .dimension(sessionDateDim)
+        .group(sessionDateGroupSum)
+        .data(function (d) { return d.top(5); })
+        .width(300)
+        .height(220)
+        //.height(15 * 22)
+        .margins({ top: 0, right: 10, bottom: 20, left: 20 })
+        .elasticX(true)
+        .ordinalColors(['#9ecae1']) // light blue
+        .labelOffsetX(0)
+        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+    
+    // 11 dimension, rowchart, ROOM  
+    var roomDim = facts.dimension(dc.pluck('ROOM'));
+    var roomGroupSum = roomDim.group().reduceSum(dc.pluck("count"));
+    
+    dc.rowChart("#dc-chart-room")
+        .dimension(roomDim)
+        .group(roomGroupSum)
         .data(function (d) { return d.top(15); })
         .width(300)
         .height(220)
