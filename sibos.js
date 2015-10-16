@@ -100,7 +100,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 07 dimension, rowchart, SESSIONNAME  
     var sessionNameDim = facts.dimension(dc.pluck('SESSIONNAME'));
@@ -151,7 +151,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 10 dimension, rowchart, SESSIONDATE  
     var sessionDateDim = facts.dimension(dc.pluck('SESSIONDATE'));
@@ -168,7 +168,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 11 dimension, rowchart, ROOM  
     var roomDim = facts.dimension(dc.pluck('ROOM'));
