@@ -63,7 +63,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
 	    return keys;
         })
         //.formatNumber(function (d) { return Math.round(d) + " attendees"; });
-        .formatNumber(function (d) { return d + " people"; });
+        .formatNumber(function (d) { return d + " attendees"; });
 
 
     // 03 dimension, rowchart, STREAM
