@@ -13,34 +13,72 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
     // put data in crossfilter
     var facts = crossfilter(data);
 
+    var updateUnique = function (unique, key, increment) {
+	    var value = unique["" + key];
+
+	    // not initialized
+	    if (typeof value === 'undefined')
+		value = 0;
+
+	    // update with increment
+	    if (value + increment > 0) {
+		unique["" + key] = value + increment;
+	    } else {
+		delete unique["" + key];
+	    }
+	}
+
     // 01 group for grand total number of attendees
     var totalGroup = facts.groupAll().reduce(
         function (p, v) { // add finction
-            return p += v.count;
+            ++p.count;
+            updateUnique(p.uAttendees, v["BADGEID"], 1);
+	    return p;
         },
         function (p, v) { // subtract function
-            return p -= v.count;
+            --p.count;
+            updateUnique(p.uAttendees, v["BADGEID"], -1);
+            return p;
         },
-        function () { return 0 } // initial function
+        function () {
+            return {
+                count: 0,
+                uAttendees: {} // unique Attendees
+            }
+        } // initial function
     );
+
+    // var totalGroup = facts.groupAll();
+
     // or you could use this convenience function: 
     // var totalGroup = facts.groupAll().reduceSum(dc.pluck("amount"));
-
 
     // 02 display grand total
     dc.numberDisplay("#dc-chart-total")
         .group(totalGroup)
         .valueAccessor(function (d) {
-            return d; 
+            return d.count;
+        })
+        .formatNumber(function (d) { return d + " attendance"; });
+
+    // 02 display grand total
+    dc.numberDisplay("#dc-chart-unique")
+        .group(totalGroup)
+        .valueAccessor(function (d) {
+	    console.log(d);
+            var keys = 0;
+            for (k in d.uAttendees) ++keys;
+	    return keys;
         })
         //.formatNumber(function (d) { return Math.round(d) + " attendees"; });
-        .formatNumber(function (d) { return d + " attendance"; });
+        .formatNumber(function (d) { return d + " people"; });
+
 
     // 03 dimension, rowchart, STREAM
     var streamDim = facts.dimension(dc.pluck('STREAM'));
     var streamGroupSum = streamDim.group().reduceSum(dc.pluck("count"));
     
-     dc.rowChart("#dc-chart-stream")
+    dc.rowChart("#dc-chart-stream")
         .dimension(streamDim)
         .group(streamGroupSum)
         .data(function (d) { return d.top(15); })
@@ -154,6 +192,8 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
         .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+
+    var fiscalYearDim = facts.dimension(dc.pluck('SESSIONDATE'));
         
     // 05 stacked bar chart for fiscal year w/appropriation types  
     var bar = dc.barChart("#dc-chart-fiscalYear")
