@@ -1,46 +1,76 @@
-//var billion = 1000000000;
-
 var appropriationTypeColors =
     ["#74C365", // light green 
     "#006600",  // dark green 
     "#007BA7"]; // blue
 
 
-d3.csv("./Sibos_2015_day1.csv", function (data) {
+d3.csv("./Sibos_2015_day1234.csv", function (data) {
     data.forEach(function (d) {
         d.count = 1; // add column "count", set value to "1"
     });
     // put data in crossfilter
     var facts = crossfilter(data);
 
+    var updateUnique = function (unique, key, increment) {
+	    var value = unique["" + key];
+
+	    // not initialized
+	    if (typeof value === 'undefined')
+		value = 0;
+
+	    // update with increment
+	    if (value + increment > 0) {
+		unique["" + key] = value + increment;
+	    } else {
+		delete unique["" + key];
+	    }
+	}
+
     // 01 group for grand total number of attendees
     var totalGroup = facts.groupAll().reduce(
         function (p, v) { // add finction
-            return p += v.count;
+            ++p.count;
+            updateUnique(p.uAttendees, v["BADGEID"], 1);
+	    return p;
         },
         function (p, v) { // subtract function
-            return p -= v.count;
+            --p.count;
+            updateUnique(p.uAttendees, v["BADGEID"], -1);
+            return p;
         },
-        function () { return 0 } // initial function
+        function () {
+            return {
+                count: 0,
+                uAttendees: {} // unique Attendees
+            }
+        } // initial function
     );
-    // or you could use this convenience function: 
-    // var totalGroup = facts.groupAll().reduceSum(dc.pluck("amount"));
-
 
     // 02 display grand total
     dc.numberDisplay("#dc-chart-total")
         .group(totalGroup)
         .valueAccessor(function (d) {
-            return d; 
+            return d.count;
+        })
+        .formatNumber(function (d) { return d + " scans"; });
+
+    // 02 display grand total
+    dc.numberDisplay("#dc-chart-unique")
+        .group(totalGroup)
+        .valueAccessor(function (d) {
+            var keys = 0;
+            for (k in d.uAttendees) ++keys;
+	    return keys;
         })
         //.formatNumber(function (d) { return Math.round(d) + " attendees"; });
-        .formatNumber(function (d) { return d + " attendance"; });
+        .formatNumber(function (d) { return d + " people"; });
+
 
     // 03 dimension, rowchart, STREAM
     var streamDim = facts.dimension(dc.pluck('STREAM'));
     var streamGroupSum = streamDim.group().reduceSum(dc.pluck("count"));
     
-     dc.rowChart("#dc-chart-stream")
+    dc.rowChart("#dc-chart-stream")
         .dimension(streamDim)
         .group(streamGroupSum)
         .data(function (d) { return d.top(15); })
@@ -68,7 +98,7 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 05 dimension, rowchart, BUSINESS_FOCUS  
     var businessFocusDim = facts.dimension(dc.pluck('BUSINESS_FOCUS'));
@@ -102,7 +132,7 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
     
     // 07 dimension, rowchart, SESSIONNAME  
     var sessionNameDim = facts.dimension(dc.pluck('SESSIONNAME'));
@@ -111,9 +141,9 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
     dc.rowChart("#dc-chart-sessionname")
         .dimension(sessionNameDim)
         .group(sessionNameGroupSum)
-        .data(function (d) { return d.top(50); })
+        .data(function (d) { return d.top(80); })
         .width(500)
-        .height(650)
+        .height(1010)
         //.height(15 * 22)
         .margins({ top: 0, right: 10, bottom: 20, left: 20 })
         .elasticX(true)
@@ -153,8 +183,46 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
         .elasticX(true)
         .ordinalColors(['#9ecae1']) // light blue
         .labelOffsetX(0)
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
+    
+    // 10 dimension, rowchart, SESSIONDATE  
+    var sessionDateDim = facts.dimension(dc.pluck('SESSIONDATE'));
+    var sessionDateGroupSum = sessionDateDim.group().reduceSum(dc.pluck("count"));
+    
+    dc.rowChart("#dc-chart-sessiondate")
+        .dimension(sessionDateDim)
+        .group(sessionDateGroupSum)
+        .data(function (d) { return d.top(5); })
+        .width(300)
+        .height(220)
+        //.height(15 * 22)
+        .margins({ top: 0, right: 10, bottom: 20, left: 20 })
+        .elasticX(true)
+        .ordinalColors(['#9ecae1']) // light blue
+        .labelOffsetX(0)
+        .xAxis().ticks(5).tickFormat(d3.format(".2s"));
+    
+    // 11 dimension, rowchart, ROOM  
+    var roomDim = facts.dimension(dc.pluck('ROOM'));
+    var roomGroupSum = roomDim.group().reduceSum(dc.pluck("count"));
+    
+    dc.rowChart("#dc-chart-room")
+        .dimension(roomDim)
+        .group(roomGroupSum)
+        .data(function (d) { return d.top(15); })
+        .width(300)
+        .height(220)
+        .margins({ top: 0, right: 10, bottom: 20, left: 20 })
+        .elasticX(true)
+        .ordinalColors(['#9ecae1']) // light blue
+        .labelOffsetX(0)
         .xAxis().ticks(4).tickFormat(d3.format(".2s"));
-        
+
+    // TODO: add fiscalYear
+    /*
+    var fiscalYearDim = facts.dimension(dc.pluck('SESSIONDATE'));
+    var fiscalYearGroupSum = fiscalYearDim.group().reduceSum(dc.pluck("count"));
+
     // 05 stacked bar chart for fiscal year w/appropriation types  
     var bar = dc.barChart("#dc-chart-fiscalYear")
         .dimension(fiscalYearDim)
@@ -174,6 +242,7 @@ d3.csv("./Sibos_2015_day1.csv", function (data) {
     // 06 Set format. These don't return the chart, so can't chain them 
     bar.xAxis().tickFormat(d3.format("d")); // need "2005" not "2,005" 
     bar.yAxis().tickFormat(function (v) { return v / billion + " B"; });
+    */
 
     // 08 make row charts
     new RowChart(facts, "operatingUnit", 300, 100);
