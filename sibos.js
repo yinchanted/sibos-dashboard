@@ -1,10 +1,32 @@
-var appropriationTypeColors =
-    ["#74C365", // light green 
-    "#006600",  // dark green 
-    "#007BA7"]; // blue
+// wider scope for these charts so that we can reference them from the reset and filter utility functions
+var totalNumber;
+var uniqueNumber;
+var streamRowChart;
+var insititutionRowChart;
+var bussiFocusRowChart;
+var responsibilityRowChart;
+var sessionRowChart;
+var functionRowChart;
+var ageRowChart;
+var sessiondateRowChart;
+var roomRowChart;
 
-
+// load the data file
 d3.csv("./Sibos_2015_day1234.csv", function (data) {
+    
+    // associate the charts with their html elements
+    totalNumber = dc.numberDisplay("#dc-chart-total");
+    uniqueNumber = dc.numberDisplay("#dc-chart-unique");
+	streamRowChart = dc.rowChart("#dc-chart-stream");
+	insititutionRowChart = dc.rowChart("#dc-chart-institutiontype");
+	bussiFocusRowChart = dc.rowChart("#dc-chart-businessfocus");
+	responsibilityRowChart = dc.rowChart("#dc-chart-responsibility");
+	sessionRowChart = dc.rowChart("#dc-chart-sessionname");
+	functionRowChart = dc.rowChart("#dc-chart-function");
+    ageRowChart = dc.rowChart("#dc-chart-agerange");
+    sessiondateRowChart = dc.rowChart("#dc-chart-sessiondate");
+    roomRowChart = dc.rowChart("#dc-chart-room");
+    
     data.forEach(function (d) {
         d.count = 1; // add column "count", set value to "1"
     });
@@ -26,10 +48,11 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
 	    }
 	}
 
-    // 01 group for grand total number of attendees
+    // group for grand total number of attendees
     var totalGroup = facts.groupAll().reduce(
         function (p, v) { // add finction
             ++p.count;
+            console.log(v["BADGEID"]);
             updateUnique(p.uAttendees, v["BADGEID"], 1);
 	    return p;
         },
@@ -46,16 +69,17 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
         } // initial function
     );
 
-    // 02 display grand total
-    dc.numberDisplay("#dc-chart-total")
+    // 01 display grand total
+    totalNumber
         .group(totalGroup)
         .valueAccessor(function (d) {
+            console.log(d.uAttendees);
             return d.count;
         })
         .formatNumber(function (d) { return d + " scans"; });
 
     // 02 display grand total
-    dc.numberDisplay("#dc-chart-unique")
+    uniqueNumber
         .group(totalGroup)
         .valueAccessor(function (d) {
             var keys = 0;
@@ -70,7 +94,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var streamDim = facts.dimension(dc.pluck('STREAM'));
     var streamGroupSum = streamDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-stream")
+    streamRowChart
         .dimension(streamDim)
         .group(streamGroupSum)
         .data(function (d) { return d.top(15); })
@@ -87,7 +111,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var institutionTypeDim = facts.dimension(dc.pluck('INSTITUTION_TYPE'));
     var institutionTypeGroupSum = institutionTypeDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-institutiontype")
+    insititutionRowChart
         .dimension(institutionTypeDim)
         .group(institutionTypeGroupSum)
         .data(function (d) { return d.top(15); })
@@ -104,7 +128,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var businessFocusDim = facts.dimension(dc.pluck('BUSINESS_FOCUS'));
     var businessFocusGroupSum = businessFocusDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-businessfocus")
+    bussiFocusRowChart
         .dimension(businessFocusDim)
         .group(businessFocusGroupSum)
         .data(function (d) { return d.top(15); })
@@ -121,7 +145,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var responsibilityDim = facts.dimension(dc.pluck('RESPONSIBILITY'));
     var responsibilityGroupSum = responsibilityDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-responsibility")
+    responsibilityRowChart
         .dimension(responsibilityDim)
         .group(responsibilityGroupSum)
         .data(function (d) { return d.top(15); })
@@ -138,7 +162,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var sessionNameDim = facts.dimension(dc.pluck('SESSIONNAME'));
     var sessionNameGroupSum = sessionNameDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-sessionname")
+    sessionRowChart
         .dimension(sessionNameDim)
         .group(sessionNameGroupSum)
         .data(function (d) { return d.top(80); })
@@ -155,7 +179,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var functionDim = facts.dimension(dc.pluck('FUNCTION'));
     var functionGroupSum = functionDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-function")
+    functionRowChart
         .dimension(functionDim)
         .group(functionGroupSum)
         .data(function (d) { return d.top(15); })
@@ -172,7 +196,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var ageRangeDim = facts.dimension(dc.pluck('AGE_RANGE'));
     var ageRangeGroupSum = ageRangeDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-agerange")
+    ageRowChart
         .dimension(ageRangeDim)
         .group(ageRangeGroupSum)
         .data(function (d) { return d.top(15); })
@@ -189,7 +213,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var sessionDateDim = facts.dimension(dc.pluck('SESSIONDATE'));
     var sessionDateGroupSum = sessionDateDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-sessiondate")
+    sessiondateRowChart
         .dimension(sessionDateDim)
         .group(sessionDateGroupSum)
         .data(function (d) { return d.top(5); })
@@ -206,7 +230,7 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     var roomDim = facts.dimension(dc.pluck('ROOM'));
     var roomGroupSum = roomDim.group().reduceSum(dc.pluck("count"));
     
-    dc.rowChart("#dc-chart-room")
+    roomRowChart
         .dimension(roomDim)
         .group(roomGroupSum)
         .data(function (d) { return d.top(15); })
@@ -244,31 +268,8 @@ d3.csv("./Sibos_2015_day1234.csv", function (data) {
     bar.yAxis().tickFormat(function (v) { return v / billion + " B"; });
     */
 
-    // 08 make row charts
-    new RowChart(facts, "operatingUnit", 300, 100);
-    new RowChart(facts, "agency", 300, 10);
-    new RowChart(facts, "category", 300, 10);
-    new RowChart(facts, "sector", 300, 50);
-    new RowChart(facts, "account", 300, 50);
-
     // draw all dc charts. w/o this nothing happens!  
     dc.renderAll();
 });
-
-// 07 constructor function for row charts
-var RowChart = function (facts, attribute, width, maxItems) {
-    this.dim = facts.dimension(dc.pluck(attribute));
-    dc.rowChart("#dc-chart-" + attribute)
-        .dimension(this.dim)
-        .group(this.dim.group().reduceSum(dc.pluck("amount")))
-        .data(function (d) { return d.top(maxItems); })
-        .width(width)
-        .height(maxItems * 22)
-        .margins({ top: 0, right: 10, bottom: 20, left: 20 })
-        .elasticX(true)
-        .ordinalColors(['#9ecae1']) // light blue
-        .labelOffsetX(5)
-        .xAxis().ticks(4).tickFormat(d3.format(".2s"));
-}
 
 
